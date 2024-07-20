@@ -41,9 +41,11 @@ def base():
     optim.optimizer = "adamw"
     optim.lr = 1e-4
     optim.warmup_steps = 800  # linear warmup steps
-    optim.decay_steps = 1e9  # cosine decay total steps (reaches 0 at this number)
+    # cosine decay total steps (reaches 0 at this number)
+    optim.decay_steps = 1e9
     optim.weight_decay = (
-        1e-2  # adamw weight decay -- pytorch default (which instructpix2pix and SD use)
+        # adamw weight decay -- pytorch default (which instructpix2pix and SD use)
+        1e-2
     )
     optim.beta1 = 0.9
     optim.beta2 = 0.999
@@ -100,7 +102,7 @@ def base():
 
     config.data.bridge = bridge = deepcopy(data_base)
     bridge.weight = 45.0
-    bridge.data_path = ""
+    bridge.data_path = "/home/jackyk/tfrecords"
     bridge.goal_relabeling_fn = "subgoal_only"
     bridge.goal_relabeling_kwargs = dict(
         subgoal_delta=(11, 14),
@@ -116,14 +118,14 @@ def base():
     #     truncate=False,
     # )
 
-    config.data.somethingsomething = somethingsomething = deepcopy(data_base)
-    somethingsomething.weight = 75.0
-    somethingsomething.data_path = ""
-    somethingsomething.goal_relabeling_fn = "subgoal_only"
-    somethingsomething.goal_relabeling_kwargs = dict(
-        subgoal_delta=(11, 14),
-        truncate=False,
-    )
+    # config.data.somethingsomething = somethingsomething = deepcopy(data_base)
+    # somethingsomething.weight = 75.0
+    # somethingsomething.data_path = ""
+    # somethingsomething.goal_relabeling_fn = "subgoal_only"
+    # somethingsomething.goal_relabeling_kwargs = dict(
+    #     subgoal_delta=(11, 14),
+    #     truncate=False,
+    # )
 
     # model
     config.model = model = ConfigDict()
