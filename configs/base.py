@@ -102,7 +102,7 @@ def base():
 
     config.data.bridge = bridge = deepcopy(data_base)
     bridge.weight = 45.0
-    bridge.data_path = "/home/jackyk/tfrecords"
+    bridge.data_path = "/root/tfrecords"
     bridge.goal_relabeling_fn = "subgoal_only"
     bridge.goal_relabeling_kwargs = dict(
         subgoal_delta=(11, 14),
