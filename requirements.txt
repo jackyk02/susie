@@ -5,9 +5,8 @@ chex == 0.1.85
 optax == 0.1.5
 tensorflow_probability == 0.23.0
 tensorflow == 2.15.0
-jax == 0.4.20
 distrax == 0.1.5
-flax == 0.7.5
+flax == 0.8.5
 ml_collections >= 0.1.0
 tqdm >= 4.60.0
 absl-py >= 0.12.0
@@ -26,3 +25,4 @@ dlimp @ git+https://github.com/kvablack/dlimp@166a1b271b19434c3a04b7cfacce0aa0f2
 plotly >= 5.16.1
 matplotlib
 scipy == 1.12.0
+jax[cuda12]
