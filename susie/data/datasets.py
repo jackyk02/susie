@@ -22,9 +22,11 @@ class Transforms:
         CAMERA_VIEWS = {"images0", "images1", "images2"}
         # pick a random camera view
         views = tf.stack([x["obs"][k] for k in CAMERA_VIEWS])
-        lengths = tf.stack([tf.strings.length(x["obs"][k][0]) for k in CAMERA_VIEWS])
+        lengths = tf.stack([tf.strings.length(x["obs"][k][0])
+                           for k in CAMERA_VIEWS])
         views = views[lengths > 0]
-        idx = tf.random.uniform([], minval=0, maxval=tf.shape(views)[0], dtype=tf.int32)
+        idx = tf.random.uniform(
+            [], minval=0, maxval=tf.shape(views)[0], dtype=tf.int32)
         x["obs"] = views[idx]
         # x["obs"] = x["obs"]["images0"]
 
@@ -100,7 +102,8 @@ def make_dataset(
     )
 
     dataset = dataset.map(
-        partial(dl.transforms.decode_images, match=["curr", "goals", "subgoals"])
+        partial(dl.transforms.decode_images, match=[
+                "curr", "goals", "subgoals"])
     ).map(
         partial(
             dl.transforms.resize_images,
@@ -125,7 +128,7 @@ def make_dataset(
         partial(
             dl.transforms.selective_tree_map,
             match=["curr", "goals", "subgoals"],
-            map_fn=lambda v: v / 127.5 - 1.0,
+            map_fn=lambda v: tf.cast(v, tf.float32) / 127.5 - 1.0,
         )
     )
 
@@ -142,8 +145,10 @@ def get_data_loader(data_config, tokenize_fn, mesh=None):
     for data_name, data_kwargs in data_config.items():
         data_kwargs = dict(data_kwargs)
         weights.append(float(data_kwargs.pop("weight")))
-        train_datasets.append(make_dataset(data_name, train=True, **data_kwargs))
-        val_datasets.append(make_dataset(data_name, train=False, **data_kwargs))
+        train_datasets.append(make_dataset(
+            data_name, train=True, **data_kwargs))
+        val_datasets.append(make_dataset(
+            data_name, train=False, **data_kwargs))
 
     train = dl.DLataset.sample_from_datasets(
         train_datasets, weights=weights, stop_on_empty_dataset=True

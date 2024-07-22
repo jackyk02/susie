@@ -589,6 +589,7 @@ def main(_):
             )
 
             if jax.process_index() == 0:
+                print("process index == 0!!!!!!!!!!!!!!!!!!!!!!")
                 prompts = untokenize(data["prompt_ids"])
                 prompt_str = "; ".join(prompts)
                 pil = Image.fromarray(final_image)

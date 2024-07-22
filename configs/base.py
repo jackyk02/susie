@@ -102,7 +102,7 @@ def base():
 
     config.data.bridge = bridge = deepcopy(data_base)
     bridge.weight = 45.0
-    bridge.data_path = "/root/tfrecords"
+    bridge.data_path = "/mnt/d/tfrecords"
     bridge.goal_relabeling_fn = "subgoal_only"
     bridge.goal_relabeling_kwargs = dict(
         subgoal_delta=(11, 14),
@@ -151,7 +151,7 @@ def debug():
     config.sample.num_steps = 20
     config.sample.w = 1.0
 
-    config.data.batch_size = 16
+    config.data.batch_size = 4
     for data in [d for d in config.data.values() if isinstance(d, ConfigDict)]:
         data.shuffle_buffer_size = 100
         # data.image_size = 32

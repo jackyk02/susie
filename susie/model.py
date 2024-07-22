@@ -17,7 +17,7 @@ from jax.lax import with_sharding_constraint as wsc
 from transformers import CLIPTokenizer, FlaxCLIPTextModel
 
 import wandb
-from susie import sampling, scheduling
+from susie import sampling, scheduling, action_processing
 from susie.jax_utils import replicate
 
 
@@ -39,7 +39,8 @@ def create_model_def(config: dict) -> FlaxUNet2DConditionModel:
         dict(config), return_unused_kwargs=True
     )
     if unused_kwargs:
-        logging.warning(f"FlaxUNet2DConditionModel unused kwargs: {unused_kwargs}")
+        logging.warning(
+            f"FlaxUNet2DConditionModel unused kwargs: {unused_kwargs}")
     # monkey-patch __call__ to use channels-last
     model.__call__ = lambda self, sample, *args, **kwargs: eo.rearrange(
         FlaxUNet2DConditionModel.__call__(
@@ -87,7 +88,8 @@ def load_vae(
         latents = vae.apply({"params": vae_params}, sample, method=vae.encode).sample(
             key
         )
-        latents = eo.rearrange(latents, "(n x) h w c -> n h w (x c)", n=batch_size)
+        latents = eo.rearrange(
+            latents, "(n x) h w c -> n h w (x c)", n=batch_size)
         latents = jax.lax.cond(
             scale, lambda: latents * vae.config.scaling_factor, lambda: latents
         )
@@ -104,7 +106,8 @@ def load_vae(
             scale, lambda: latents / vae.config.scaling_factor, lambda: latents
         )
         sample = vae.apply({"params": vae_params}, latents, method=vae.decode)
-        sample = eo.rearrange(sample, "(n x) h w c -> n h w (x c)", n=batch_size)
+        sample = eo.rearrange(
+            sample, "(n x) h w c -> n h w (x c)", n=batch_size)
         return sample
 
     return partial(vae_encode, vae_params), partial(vae_decode, vae_params)
@@ -128,7 +131,12 @@ def load_text_encoder(
         path, subfolder="tokenizer", revision=revision
     )
 
+    print("Action Tokenizer Initialized")
+    action_tokenizer = action_processing.ActionTokenizer(tokenizer)
+
     def tokenize(s: List[str]) -> np.ndarray:
+        print("tokenize input!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: " + str(s))
+        print(tokenizer(s, padding="max_length", return_tensors="np").input_ids)
         return tokenizer(s, padding="max_length", return_tensors="np").input_ids
 
     untokenize = partial(tokenizer.batch_decode, skip_special_tokens=True)
@@ -138,6 +146,18 @@ def load_text_encoder(
         return text_encoder(prompt_ids, params=params)[0]
 
     return tokenize, untokenize, partial(text_encode, text_encoder.params)
+
+    # def tokenize(s: List[str]) -> np.ndarray:
+    #     return action_tokenizer(s)
+
+    # def untokenize(token_ids: np.ndarray) -> List[str]:
+    #     return action_tokenizer.decode_token_ids_to_actions(token_ids)
+
+    # @jax.jit
+    # def text_encode(params, prompt_ids):
+    #     return text_encoder(prompt_ids, params=params)[0]
+
+    # return tokenize, untokenize, partial(text_encode, text_encoder.params)
 
 
 def load_pretrained_unet(
@@ -252,7 +272,8 @@ def create_sample_fn(
             uncond_prompt_embeds=uncond_prompt_embed,
         )
         samples = vae_decode(samples)
-        samples = jnp.clip(jnp.round(samples * 127.5 + 127.5), 0, 255).astype(jnp.uint8)
+        samples = jnp.clip(jnp.round(samples * 127.5 + 127.5),
+                           0, 255).astype(jnp.uint8)
 
         return jax.device_get(samples[0])
 
