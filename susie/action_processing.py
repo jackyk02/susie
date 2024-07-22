@@ -36,15 +36,12 @@ class ActionTokenizer:
         self.action_token_begin_idx: int = int(
             self.tokenizer.vocab_size - (self.n_bins + 1))
 
-        print("begin index: " + str(self.action_token_begin_idx))
-        print("vocab size: " + str(self.tokenizer.vocab_size))
-        print("bin center: " + str(self.bin_centers))
-
     def __call__(self, action: np.ndarray) -> Union[str, List[str]]:
         """Clip & bin actions to *the last `n_bins` tokens* of the vocabulary (e.g., tokenizer.vocab[-256:])."""
         action = np.clip(action, a_min=float(self.min_action),
                          a_max=float(self.max_action))
         discretized_action = np.digitize(action, self.bins)
+        print("call: " + str(list(self.tokenizer.vocab_size - discretized_action)))
 
         # Handle single element vs. batch
         if len(discretized_action.shape) == 1:

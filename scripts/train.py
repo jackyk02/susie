@@ -105,7 +105,8 @@ def train_step(
     elif goal_drop_rate > 0:
         rng, mask_rng = jax.random.split(rng)
         batch["goals"] = jnp.where(
-            jax.random.uniform(mask_rng, shape=(batch_size, 1, 1, 1)) < goal_drop_rate,
+            jax.random.uniform(mask_rng, shape=(
+                batch_size, 1, 1, 1)) < goal_drop_rate,
             0,
             batch["goals"],
         )
@@ -113,7 +114,8 @@ def train_step(
     if curr_drop_rate > 0:
         rng, mask_rng = jax.random.split(rng)
         batch["curr"] = jnp.where(
-            jax.random.uniform(mask_rng, shape=(batch_size, 1, 1, 1)) < curr_drop_rate,
+            jax.random.uniform(mask_rng, shape=(
+                batch_size, 1, 1, 1)) < curr_drop_rate,
             0,
             batch["curr"],
         )
@@ -121,7 +123,8 @@ def train_step(
     if prompt_drop_rate > 0:
         rng, mask_rng = jax.random.split(rng)
         prompt_embeds = jnp.where(
-            jax.random.uniform(mask_rng, shape=(batch_size, 1, 1)) < prompt_drop_rate,
+            jax.random.uniform(mask_rng, shape=(
+                batch_size, 1, 1)) < prompt_drop_rate,
             uncond_prompt_embed,
             prompt_embeds,
         )
@@ -199,7 +202,8 @@ def main(_):
     tf.random.set_seed(config.seed + jax.process_index())
 
     # get jax devices
-    logging.info(f"JAX process: {jax.process_index()} of {jax.process_count()}")
+    logging.info(
+        f"JAX process: {jax.process_index()} of {jax.process_count()}")
     logging.info(f"Local devices: {jax.local_device_count()}")
     logging.info(f"Global devices: {jax.device_count()}")
 
@@ -266,9 +270,11 @@ def main(_):
 
     # load text encoder
     tokenize, untokenize, text_encode = load_text_encoder(config.text_encoder)
-    uncond_prompt_embed = jax.device_get(text_encode(tokenize([""])))  # (1, 77, 768)
+    uncond_prompt_embed = jax.device_get(
+        text_encode(tokenize([""])))  # (1, 77, 768)
 
     def tokenize_fn(batch):
+        print(batch.pop("actions"))
         lang = [s.decode("utf-8") for s in batch.pop("lang")]
         assert all(s != "" for s in lang)
         batch["prompt_ids"] = tokenize(lang)
@@ -282,7 +288,8 @@ def main(_):
         pretrained_config = ConfigDict(pretrained_model_def.config)
         del config.model.pretrained
         if config.model.keys():
-            logging.warning(f"Overriding pretrained config keys: {config.model.keys()}")
+            logging.warning(
+                f"Overriding pretrained config keys: {config.model.keys()}")
             pretrained_config.update(config.model)
         config.model = pretrained_config
     else:
@@ -344,7 +351,8 @@ def main(_):
                 ],
                 axis=-1,
             )
-            example_timesteps = jnp.zeros(example_input.shape[:1], example_input.dtype)
+            example_timesteps = jnp.zeros(
+                example_input.shape[:1], example_input.dtype)
             example_prompt_embeds = jnp.zeros(
                 [example_input.shape[0], 77, 768], example_input.dtype
             )
@@ -443,7 +451,8 @@ def main(_):
         EmaTrainState.apply_ema_decay,
         in_shardings=(state_sharding, replicated_sharding),  # state, ema_decay
         out_shardings=state_sharding,  # new_state
-        donate_argnums=0,  # donate state (have to respecify; it doesn't carry over from the inner jit)
+        # donate state (have to respecify; it doesn't carry over from the inner jit)
+        donate_argnums=0,
     )
 
     # shard sample loop
@@ -491,7 +500,8 @@ def main(_):
 
         # train logging
         if (step + 1) % config.log_interval == 0 and jax.process_index() == 0:
-            summary = {f"train/{k}": np.mean(v) for k, v in train_metrics.items()}
+            summary = {f"train/{k}": np.mean(v)
+                       for k, v in train_metrics.items()}
             summary["time/seconds_per_step"] = (
                 time.time() - last_t
             ) / config.log_interval
@@ -514,7 +524,8 @@ def main(_):
                 for k, v in info.items():
                     val_metrics[k].append(v)
             if jax.process_index() == 0:
-                summary = {f"val/{k}": np.mean(v) for k, v in val_metrics.items()}
+                summary = {f"val/{k}": np.mean(v)
+                           for k, v in val_metrics.items()}
                 wandb.log(summary, step=step + 1)
 
         if (step + 1) % config.sample_interval == 0:
@@ -528,7 +539,8 @@ def main(_):
                     data[key].extend(batch[key])
             data = {k: np.array(v) for k, v in data.items()}
 
-            data = jax.tree_map(lambda x: x[: config.sample.num_contexts], data)
+            data = jax.tree_map(
+                lambda x: x[: config.sample.num_contexts], data)
 
             # get rid of goals if we're not using them
             if config.goal_drop_rate == 1.0:
@@ -569,7 +581,8 @@ def main(_):
                 contexts_repeated,
                 prompt_embeds_repeated,
                 jnp.zeros_like(contexts_repeated),
-                jnp.broadcast_to(uncond_prompt_embed, prompt_embeds_repeated.shape),
+                jnp.broadcast_to(uncond_prompt_embed,
+                                 prompt_embeds_repeated.shape),
             )  # (num_contexts * num_samples_per_context, h, w, c)
 
             if config.vae:

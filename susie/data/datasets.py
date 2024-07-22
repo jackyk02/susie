@@ -30,7 +30,7 @@ class Transforms:
         x["obs"] = views[idx]
         # x["obs"] = x["obs"]["images0"]
 
-        del x["actions"]
+        # del x["actions"]
         return x
 
     @staticmethod
