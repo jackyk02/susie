@@ -269,15 +269,37 @@ def main(_):
         vae_encode, vae_decode = load_vae(config.vae)
 
     # load text encoder
-    tokenize, untokenize, text_encode = load_text_encoder(config.text_encoder)
+    tokenize, untokenize, text_encode, action_tokenizer = load_text_encoder(
+        config.text_encoder)
     uncond_prompt_embed = jax.device_get(
         text_encode(tokenize([""])))  # (1, 77, 768)
 
     def tokenize_fn(batch):
-        print(batch.pop("actions"))
-        lang = [s.decode("utf-8") for s in batch.pop("lang")]
-        assert all(s != "" for s in lang)
-        batch["prompt_ids"] = tokenize(lang)
+        # print("cur: " + str(batch.pop("curr_obs")[0]))
+        # print("next: " + str(batch.pop("next_obs")[0]))
+        token_ids = action_tokenizer.__call__(batch["actions"])
+        prompt_template = np.array(
+            [49406, 768, 1311, 585, 1012, 789, 953, 2019, 518, 1816])
+
+        final_token_ids = []
+
+        for ids in token_ids:
+            temp_ids = np.concatenate([prompt_template, ids, np.array([286])])
+            padding = 77 - len(temp_ids)
+            token_ids = np.pad(temp_ids, (0, padding), constant_values=49407)
+            final_token_ids.append(token_ids)
+
+        # prompts = [
+        #    f"What would it look like after taking the action {action}?" for action in discretized]
+
+        # assert all(s != "" for s in prompts)
+        # batch["prompt_ids"] = tokenize(prompts)
+        batch["prompt_ids"] = np.array(final_token_ids)
+
+        print("hello")
+        # print(prompts)
+        print(batch["prompt_ids"])
+
         return batch
 
     # load pretrained model

@@ -151,7 +151,7 @@ def debug():
     config.sample.num_steps = 20
     config.sample.w = 1.0
 
-    config.data.batch_size = 4
+    config.data.batch_size = 2
     for data in [d for d in config.data.values() if isinstance(d, ConfigDict)]:
         data.shuffle_buffer_size = 100
         # data.image_size = 32

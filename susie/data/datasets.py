@@ -91,23 +91,19 @@ def make_dataset(
         dl.DLataset.from_tfrecords(paths)
         .map(dl.transforms.unflatten_dict)
         .map(getattr(Transforms, name))
-        .filter(lambda x: tf.math.reduce_all(x["lang"] != ""))
-        .apply(
-            partial(
-                getattr(goal_relabeling, goal_relabeling_fn), **goal_relabeling_kwargs
-            ),
-        )
+        # Ensure actions exist
+        .filter(lambda x: tf.math.reduce_all(tf.math.is_finite(x["actions"])))
         .unbatch()
         .shuffle(shuffle_buffer_size)
     )
 
+    # Decode and resize images
     dataset = dataset.map(
-        partial(dl.transforms.decode_images, match=[
-                "curr", "goals", "subgoals"])
+        partial(dl.transforms.decode_images, match=["obs"])
     ).map(
         partial(
             dl.transforms.resize_images,
-            match=["curr", "goals", "subgoals"],
+            match=["obs"],
             size=(image_size, image_size),
         )
     )
@@ -118,21 +114,91 @@ def make_dataset(
                 dl.transforms.augment,
                 traj_identical=False,
                 keys_identical=True,
-                match=["curr", "goals", "subgoals"],
+                match=["obs"],
                 augment_kwargs=augment_kwargs,
             )
         )
 
-    # normalize images to [-1, 1]
+    # Normalize images to [-1, 1]
     dataset = dataset.map(
         partial(
             dl.transforms.selective_tree_map,
-            match=["curr", "goals", "subgoals"],
+            match=["obs"],
             map_fn=lambda v: tf.cast(v, tf.float32) / 127.5 - 1.0,
         )
     )
 
+    # Create current and next observations
+    # Current observation starts with index 0 and ends -1
+    # Next observation starts with index 1 and ends at max length
+    def create_curr_next_action(x):
+        curr_obs = x["obs"][:-1]
+        next_obs = x["obs"][1:]
+        actions = x["actions"][:-1]
+        return {"curr_obs": curr_obs, "next_obs": next_obs, "actions": actions}
+
+    dataset = dataset.map(create_curr_next_action)
+
     return dataset.repeat()
+
+# def make_dataset(
+#     name: str,
+#     data_path: str,
+#     image_size: int,
+#     shuffle_buffer_size: int,
+#     train: bool,
+#     goal_relabeling_fn: str,
+#     goal_relabeling_kwargs: dict = {},
+#     augment_kwargs: dict = {},
+# ) -> dl.DLataset:
+#     paths = getattr(GetPaths, name)(data_path, train)
+
+#     dataset = (
+#         dl.DLataset.from_tfrecords(paths)
+#         .map(dl.transforms.unflatten_dict)
+#         .map(getattr(Transforms, name))
+#         .filter(lambda x: tf.math.reduce_all(x["lang"] != ""))
+#         .apply(
+#             partial(
+#                 getattr(goal_relabeling, goal_relabeling_fn), **goal_relabeling_kwargs
+#             ),
+#         )
+#         .unbatch()
+#         .shuffle(shuffle_buffer_size)
+#     )
+
+#     dataset = dataset.map(
+#         partial(dl.transforms.decode_images, match=[
+#                 "curr", "goals", "subgoals"])
+#     ).map(
+#         partial(
+#             dl.transforms.resize_images,
+#             match=["curr", "goals", "subgoals"],
+#             size=(image_size, image_size),
+#         )
+#     )
+
+#     if train:
+#         dataset = dataset.map(
+#             partial(
+#                 dl.transforms.augment,
+#                 traj_identical=False,
+#                 keys_identical=True,
+#                 match=["curr", "goals", "subgoals"],
+#                 augment_kwargs=augment_kwargs,
+#             )
+#         )
+
+#     # normalize images to [-1, 1]
+#     dataset = dataset.map(
+#         partial(
+#             dl.transforms.selective_tree_map,
+#             match=["curr", "goals", "subgoals"],
+#             map_fn=lambda v: tf.cast(v, tf.float32) / 127.5 - 1.0,
+#         )
+#     )
+
+#     return dataset.repeat()
 
 
 def get_data_loader(data_config, tokenize_fn, mesh=None):
@@ -164,7 +230,6 @@ def get_data_loader(data_config, tokenize_fn, mesh=None):
             P(("dp", "fsdp")),
         )
 
-    # WARNING: for some reason any amount of prefetching is also a total no-go in terms of memory usage...
     train = map(tokenize_fn, train.as_numpy_iterator())
     val = map(tokenize_fn, val.as_numpy_iterator())
 
@@ -172,3 +237,42 @@ def get_data_loader(data_config, tokenize_fn, mesh=None):
         return map(shard, train), map(shard, val), len(train_datasets)
     else:
         return train, val, len(train_datasets)
+
+
+# def get_data_loader(data_config, tokenize_fn, mesh=None):
+#     data_config = dict(data_config)
+#     batch_size = data_config.pop("batch_size")
+
+#     train_datasets = []
+#     val_datasets = []
+#     weights = []
+#     for data_name, data_kwargs in data_config.items():
+#         data_kwargs = dict(data_kwargs)
+#         weights.append(float(data_kwargs.pop("weight")))
+#         train_datasets.append(make_dataset(
+#             data_name, train=True, **data_kwargs))
+#         val_datasets.append(make_dataset(
+#             data_name, train=False, **data_kwargs))
+
+#     train = dl.DLataset.sample_from_datasets(
+#         train_datasets, weights=weights, stop_on_empty_dataset=True
+#     ).batch(batch_size, num_parallel_calls=tf.data.AUTOTUNE)
+#     val = dl.DLataset.sample_from_datasets(
+#         val_datasets, weights=weights, stop_on_empty_dataset=True
+#     ).batch(batch_size, num_parallel_calls=tf.data.AUTOTUNE)
+
+#     def shard(batch):
+#         return multihost_utils.host_local_array_to_global_array(
+#             batch,
+#             mesh,
+#             P(("dp", "fsdp")),
+#         )
+
+#     # WARNING: for some reason any amount of prefetching is also a total no-go in terms of memory usage...
+#     train = map(tokenize_fn, train.as_numpy_iterator())
+#     val = map(tokenize_fn, val.as_numpy_iterator())
+
+#     if mesh:
+#         return map(shard, train), map(shard, val), len(train_datasets)
+#     else:
+#         return train, val, len(train_datasets)

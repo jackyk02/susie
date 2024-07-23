@@ -42,12 +42,13 @@ class ActionTokenizer:
                          a_max=float(self.max_action))
         discretized_action = np.digitize(action, self.bins)
         print("call: " + str(list(self.tokenizer.vocab_size - discretized_action)))
+        return list(self.tokenizer.vocab_size - discretized_action)
 
         # Handle single element vs. batch
-        if len(discretized_action.shape) == 1:
-            return self.tokenizer.decode(list(self.tokenizer.vocab_size - discretized_action))
-        else:
-            return self.tokenizer.batch_decode((self.tokenizer.vocab_size - discretized_action).tolist())
+        # if len(discretized_action.shape) == 1:
+        #     return self.tokenizer.decode(list(self.tokenizer.vocab_size - discretized_action))
+        # else:
+        #     return self.tokenizer.batch_decode((self.tokenizer.vocab_size - discretized_action).tolist())
 
     def decode_token_ids_to_actions(self, action_token_ids: np.ndarray) -> np.ndarray:
         """
@@ -71,27 +72,27 @@ class ActionTokenizer:
 
         return self.bin_centers[discretized_actions]
 
-    def action_str_to_numpy(self, action_prompt: str) -> np.ndarray:
-        # example_action_prompt = "[0.0024753  0.00216596 0.00469544 0.01071722 0.00189886 0.00154509 0.99607843]"
+    # def action_str_to_numpy(self, action_prompt: str) -> np.ndarray:
+    #     # example_action_prompt = "[0.0024753  0.00216596 0.00469544 0.01071722 0.00189886 0.00154509 0.99607843]"
 
-        # Remove brackets and split the string
-        actions = action_prompt.strip('[]').split()
+    #     # Remove brackets and split the string
+    #     actions = action_prompt.strip('[]').split()
 
-        # Convert the string numbers to float and create a NumPy array based on prompt
-        return np.array([float(dim) for dim in actions])
+    #     # Convert the string numbers to float and create a NumPy array based on prompt
+    #     return np.array([float(dim) for dim in actions])
 
-    def action_numpy_to_str(self, action_array: np.ndarray) -> str:
-        # Convert NumPy array to string with specific formatting
-        action_str = np.array2string(action_array,
-                                     separator=' ',
-                                     precision=8,
-                                     suppress_small=True,
-                                     floatmode='fixed')
+    # def action_numpy_to_str(self, action_array: np.ndarray) -> str:
+    #     # Convert NumPy array to string with specific formatting
+    #     action_str = np.array2string(action_array,
+    #                                  separator=' ',
+    #                                  precision=8,
+    #                                  suppress_small=True,
+    #                                  floatmode='fixed')
 
-        # Remove newlines and extra spaces
-        action_str = action_str.replace('\n', '').replace('  ', ' ')
+    #     # Remove newlines and extra spaces
+    #     action_str = action_str.replace('\n', '').replace('  ', ' ')
 
-        return action_str
+    #     return action_str
 
     @property
     def vocab_size(self) -> int:
