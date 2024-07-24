@@ -41,7 +41,7 @@ class ActionTokenizer:
         action = np.clip(action, a_min=float(self.min_action),
                          a_max=float(self.max_action))
         discretized_action = np.digitize(action, self.bins)
-        print("call: " + str(list(self.tokenizer.vocab_size - discretized_action)))
+        # print("call: " + str(list(self.tokenizer.vocab_size - discretized_action)))
         return list(self.tokenizer.vocab_size - discretized_action)
 
         # Handle single element vs. batch

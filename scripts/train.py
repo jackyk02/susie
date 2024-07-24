@@ -297,9 +297,9 @@ def main(_):
         # batch["prompt_ids"] = tokenize(prompts)
         batch["prompt_ids"] = np.array(final_token_ids)
 
-        print("hello")
+        # print("hello")
         # print(prompts)
-        print(batch["prompt_ids"])
+        # print(batch["prompt_ids"])
 
         return batch
 
@@ -358,7 +358,7 @@ def main(_):
     if pretrained_params is None or config.wandb_resume_id is not None:
         example_batch = next(train_loader)
         print("--------------------------------")
-        print(example_batch["subgoals"].shape)
+        print(example_batch["subgoals"])
 
         def init_fn(init_rng):
             if config.goal_drop_rate == 1.0:
@@ -625,7 +625,7 @@ def main(_):
             )
 
             if jax.process_index() == 0:
-                print("process index == 0!!!!!!!!!!!!!!!!!!!!!!")
+                # print("process index == 0!!!!!!!!!!!!!!!!!!!!!!")
                 prompts = untokenize(data["prompt_ids"])
                 prompt_str = "; ".join(prompts)
                 pil = Image.fromarray(final_image)

@@ -134,19 +134,19 @@ def load_text_encoder(
 
     action_tokenizer = action_processing.ActionTokenizer(tokenizer)
 
-    print("begin index: " + str(action_tokenizer.action_token_begin_idx))
-    print("vocab size: " + str(action_tokenizer.tokenizer.vocab_size))
-    print("bin center: " + str(action_tokenizer.bin_centers))
+    # print("begin index: " + str(action_tokenizer.action_token_begin_idx))
+    # print("vocab size: " + str(action_tokenizer.tokenizer.vocab_size))
+    # print("bin center: " + str(action_tokenizer.bin_centers))
     # example_action = np.array([-1.70204811e-02, -3.27922452e-02, 3.99110917e-02, -4.45905340e-02,
     #                           -8.79744622e-02, -1.08816563e-01, 0.0000012312])
     # the corresponding least used words after calling:ricciardo fresher disintegrrevs linkin stewards airspace
     # print("after calling:" + action_tokenizer.__call__(example_action))
 
     def tokenize(s: List[str]) -> np.ndarray:
-        print("tokenize input!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: " + str(s))
-        print(tokenizer(s, padding="max_length", return_tensors="np").input_ids)
-        print(tokenizer(s, padding="max_length",
-              return_tensors="np").input_ids.shape)
+        # print("tokenize input!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: " + str(s))
+        # print(tokenizer(s, padding="max_length", return_tensors="np").input_ids)
+        # print(tokenizer(s, padding="max_length",
+        #      return_tensors="np").input_ids.shape)
         return tokenizer(s, padding="max_length", return_tensors="np").input_ids
 
     untokenize = partial(tokenizer.batch_decode, skip_special_tokens=True)
