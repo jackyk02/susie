@@ -275,9 +275,9 @@ def main(_):
         text_encode(tokenize([""])))  # (1, 77, 768)
 
     def tokenize_fn(batch):
-        print("cur: " + str(batch.pop("obs")[0]))
+        # print("cur: " + str(batch.pop("curr_obs")[0].shape))
         # print("next: " + str(batch.pop("next_obs")[0]))
-        print("next: " + str(batch.pop("next_obs")[0]))
+        # print("next: " + str(batch.pop("next_obs")[0].shape))
         token_ids = action_tokenizer.__call__(batch["actions"])
         prompt_template = np.array(
             [49406, 768, 1311, 585, 1012, 789, 953, 2019, 518, 1816])

@@ -30,8 +30,10 @@ class Transforms:
         x["obs"] = views[idx]
         # x["obs"] = x["obs"]["images0"]
         del x["next_obs"]
-        x = dl.transforms.add_next_obs(x, pad=False)
+        x = dl.transforms.add_next_obs(x, pad=True)
         # del x["actions"]
+        # print(len(x["obs"]))
+        # print(len(x["next_obs"]))
         return x
 
     @staticmethod
@@ -135,13 +137,14 @@ def make_dataset(
     # Create current and next observations
     # Current observation starts with index 0 and ends -1
     # Next observation starts with index 1 and ends at max length
-    # def create_curr_next_action(x):
-    #     curr_obs = x["obs"][:-1]
-    #     next_obs = x["obs"][1:]
-    #     actions = x["actions"][:-1]
-    #     return {"curr_obs": curr_obs, "next_obs": next_obs, "actions": actions}
+    def formatting(x):
+        curr = x["obs"]
+        subgoals = x["next_obs"]
+        goals = x["next_obs"][:]
+        actions = x["actions"]
+        return {"curr": curr, "subgoals": subgoals, "goals": goals, "actions": actions}
 
-    # dataset = dataset.map(create_curr_next_action)
+    dataset = dataset.map(formatting)
 
     return dataset.repeat()
 
