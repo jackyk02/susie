@@ -29,7 +29,8 @@ class Transforms:
             [], minval=0, maxval=tf.shape(views)[0], dtype=tf.int32)
         x["obs"] = views[idx]
         # x["obs"] = x["obs"]["images0"]
-
+        del x["next_obs"]
+        x = dl.transforms.add_next_obs(x, pad=False)
         # del x["actions"]
         return x
 
@@ -91,19 +92,22 @@ def make_dataset(
         dl.DLataset.from_tfrecords(paths)
         .map(dl.transforms.unflatten_dict)
         .map(getattr(Transforms, name))
-        # Ensure actions exist
         .filter(lambda x: tf.math.reduce_all(tf.math.is_finite(x["actions"])))
         .unbatch()
         .shuffle(shuffle_buffer_size)
     )
 
+    # add next obs
+    # dataset = dataset.map(
+    #     partial(dl.transforms.add_next_obs, pad=False))
+
     # Decode and resize images
     dataset = dataset.map(
-        partial(dl.transforms.decode_images, match=["obs"])
+        partial(dl.transforms.decode_images, match=["obs", "next_obs"])
     ).map(
         partial(
             dl.transforms.resize_images,
-            match=["obs"],
+            match=["obs", "next_obs"],
             size=(image_size, image_size),
         )
     )
@@ -114,7 +118,7 @@ def make_dataset(
                 dl.transforms.augment,
                 traj_identical=False,
                 keys_identical=True,
-                match=["obs"],
+                match=["obs", "next_obs"],
                 augment_kwargs=augment_kwargs,
             )
         )
@@ -123,7 +127,7 @@ def make_dataset(
     dataset = dataset.map(
         partial(
             dl.transforms.selective_tree_map,
-            match=["obs"],
+            match=["obs", "next_obs"],
             map_fn=lambda v: tf.cast(v, tf.float32) / 127.5 - 1.0,
         )
     )
@@ -131,13 +135,13 @@ def make_dataset(
     # Create current and next observations
     # Current observation starts with index 0 and ends -1
     # Next observation starts with index 1 and ends at max length
-    def create_curr_next_action(x):
-        curr_obs = x["obs"][:-1]
-        next_obs = x["obs"][1:]
-        actions = x["actions"][:-1]
-        return {"curr_obs": curr_obs, "next_obs": next_obs, "actions": actions}
+    # def create_curr_next_action(x):
+    #     curr_obs = x["obs"][:-1]
+    #     next_obs = x["obs"][1:]
+    #     actions = x["actions"][:-1]
+    #     return {"curr_obs": curr_obs, "next_obs": next_obs, "actions": actions}
 
-    dataset = dataset.map(create_curr_next_action)
+    # dataset = dataset.map(create_curr_next_action)
 
     return dataset.repeat()
 
