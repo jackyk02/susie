@@ -8,7 +8,7 @@ def base():
 
     # top-level stuff
     config.seed = 42
-    config.wandb_project = "susie"
+    config.wandb_project = None
     config.run_name = ""
     config.logdir = "/root/logs"  # specify logdir path
     config.num_steps = 40000
@@ -22,7 +22,7 @@ def base():
     config.prompt_drop_rate = 0.0
     config.mesh = [-1, 1]  # dp, fsdp
 
-    config.wandb_resume_id = None
+    config.wandb_resume_id = "susie/9rg8vi2r"
 
     config.vae = "runwayml/stable-diffusion-v1-5:flax"
     config.text_encoder = "runwayml/stable-diffusion-v1-5:flax"
