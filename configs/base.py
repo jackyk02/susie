@@ -68,7 +68,7 @@ def base():
 
     # data
     config.data = ConfigDict()
-    config.data.batch_size = 128
+    config.data.batch_size = 64
 
     data_base = ConfigDict()
     data_base.image_size = 256
