@@ -29,7 +29,7 @@ class Transforms:
             [], minval=0, maxval=tf.shape(views)[0], dtype=tf.int32)
         x["obs"] = views[idx]
         # x["obs"] = x["obs"]["images0"]
-        del x["next_obs"]
+        # del x["next_obs"]
         x = dl.transforms.add_next_obs(x, pad=True)
         # del x["actions"]
         # print(len(x["obs"]))
