@@ -9,7 +9,7 @@ def base():
     # top-level stuff
     config.seed = 42
     config.wandb_project = None
-    config.run_name = ""
+    config.run_name = "susie"
     config.logdir = "/root/logs"  # specify logdir path
     config.num_steps = 40000
     config.log_interval = 100
@@ -20,9 +20,9 @@ def base():
     config.goal_drop_rate = 1.0
     config.curr_drop_rate = 0.0
     config.prompt_drop_rate = 0.0
-    config.mesh = [-1, 1]  # dp, fsdp
+    config.mesh = [8, 1]  # dp, fsdp
 
-    config.wandb_resume_id = "susie/9rg8vi2r"
+    config.wandb_resume_id = None  # "susie/9rg8vi2r"
 
     config.vae = "runwayml/stable-diffusion-v1-5:flax"
     config.text_encoder = "runwayml/stable-diffusion-v1-5:flax"
@@ -68,7 +68,7 @@ def base():
 
     # data
     config.data = ConfigDict()
-    config.data.batch_size = 64
+    config.data.batch_size = 512
 
     data_base = ConfigDict()
     data_base.image_size = 256
