@@ -35,19 +35,11 @@ class Pix2PixServer:
 
     def generate_image(self, payload: Dict[str, Any]) -> JSONResponse:
         try:
-            if double_encode := "encoded" in payload:
-                # Support cases where `json_numpy` is hard to install, and numpy arrays are "double-encoded" as strings
-                assert len(payload.keys() == 1), "Only uses encoded payload!"
-                payload = json.loads(payload["encoded"])
-
             # Parse payload components
             image, action = payload["image"], payload["action"]
             output_image = self.sample_fn(image, action)
+            return JSONResponse(json_numpy.dumps(output_image))
 
-            if double_encode:
-                return JSONResponse(json_numpy.dumps(output_image))
-            else:
-                return JSONResponse(json_numpy.dumps(output_image))
         except:  # noqa: E722
             logging.error(traceback.format_exc())
             logging.warning(
