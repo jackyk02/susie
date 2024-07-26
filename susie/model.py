@@ -256,14 +256,29 @@ def create_sample_fn(
 
     rng = jax.random.PRNGKey(int(time.time()))
 
-    def sample(image, prompt, prompt_w=prompt_w, context_w=context_w):
+    def action_to_tokenid(actions):
+        token_ids = action_tokenizer.__call__(actions)
+        prompt_template = np.array(
+            [49406, 768, 1311, 585, 1012, 789, 953, 2019, 518, 1816])
+
+        final_token_ids = []
+
+        for ids in token_ids:
+            temp_ids = np.concatenate([prompt_template, ids, np.array([286])])
+            padding = 77 - len(temp_ids)
+            token_ids = np.pad(temp_ids, (0, padding), constant_values=49407)
+            final_token_ids.append(token_ids)
+
+        return np.array(final_token_ids)
+
+    def sample(image, action, prompt_w=prompt_w, context_w=context_w):
         nonlocal rng
 
         image = image / 127.5 - 1.0
         image = image[None]
         assert image.shape == (1, 256, 256, 3)
 
-        prompt_embeds = text_encode(tokenize([prompt]))
+        prompt_embeds = text_encode(action_to_tokenid(action))
 
         # encode stuff
         rng, encode_rng = jax.random.split(rng)
@@ -287,5 +302,37 @@ def create_sample_fn(
                            0, 255).astype(jnp.uint8)
 
         return jax.device_get(samples[0])
+
+    # def sample(image, prompt, prompt_w=prompt_w, context_w=context_w):
+    #     nonlocal rng
+
+    #     image = image / 127.5 - 1.0
+    #     image = image[None]
+    #     assert image.shape == (1, 256, 256, 3)
+
+    #     prompt_embeds = text_encode(tokenize([prompt]))
+
+    #     # encode stuff
+    #     rng, encode_rng = jax.random.split(rng)
+    #     contexts = vae_encode(encode_rng, image, scale=False)
+
+    #     rng, sample_rng = jax.random.split(rng)
+    #     samples = sample_loop(
+    #         sample_rng,
+    #         state,
+    #         contexts,
+    #         prompt_embeds,
+    #         num_timesteps=num_timesteps,
+    #         prompt_w=prompt_w,
+    #         context_w=context_w,
+    #         eta=eta,
+    #         uncond_y=jnp.zeros_like(contexts),
+    #         uncond_prompt_embeds=uncond_prompt_embed,
+    #     )
+    #     samples = vae_decode(samples)
+    #     samples = jnp.clip(jnp.round(samples * 127.5 + 127.5),
+    #                        0, 255).astype(jnp.uint8)
+
+    #     return jax.device_get(samples[0])
 
     return sample
