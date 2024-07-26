@@ -35,25 +35,26 @@ class Pix2PixServer:
 
     def generate_image(self, payload: Dict[str, Any]) -> JSONResponse:
         try:
-            if "encoded" in payload:
-                # Support cases where numpy arrays are "double-encoded" as strings
+            if double_encode := "encoded" in payload:
+                # Support cases where `json_numpy` is hard to install, and numpy arrays are "double-encoded" as strings
+                assert len(payload.keys() == 1), "Only uses encoded payload!"
                 payload = json.loads(payload["encoded"])
 
             # Parse payload components
-            image = payload["image"]
-            action = payload["action"]
-
-            # Run Pix2Pix inference
+            image, action = payload["image"], payload["action"]
             output_image = self.sample_fn(image, action)
 
-            return JSONResponse(json_numpy.dumps({"output_image": output_image}))
+            if double_encode:
+                return JSONResponse(json_numpy.dumps(output_image))
+            else:
+                return JSONResponse(action)
         except:  # noqa: E722
             logging.error(traceback.format_exc())
             logging.warning(
                 "Your request threw an error; make sure your request complies with the expected format:\n"
-                "{'image': np.ndarray, 'action': np.ndarray}"
+                "{'image': np.ndarray, 'action': np.ndarray}\n"
             )
-            return JSONResponse({"error": "An error occurred during image generation"}, status_code=500)
+            return "error"
 
     def run(self, host: str = "0.0.0.0", port: int = 8000) -> None:
         self.app = FastAPI()
