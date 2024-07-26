@@ -18,5 +18,5 @@ next_obs = requests.post(
 ).json()
 
 print(next_obs.shape)
-
+Image.fromarray(image).save("in_image.jpg")
 Image.fromarray(next_obs).save("next_obs.jpg")
