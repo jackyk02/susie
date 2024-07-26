@@ -10,7 +10,7 @@ image_url = "https://rail.eecs.berkeley.edu/datasets/bridge_release/raw/bridge_d
 image = np.array(Image.open(requests.get(
     image_url, stream=True).raw).resize((256, 256)))
 
-example_action = [0, 0.00784314, 0, 0, 0, 0.04705882, 0.99607843]
+example_action = [0, 0.00784314, 0, 0, 0, 0.04705882, -0.99607843]
 
 image_out = sample_fn(image, example_action)
 
