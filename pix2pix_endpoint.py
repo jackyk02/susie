@@ -35,6 +35,8 @@ class Pix2PixServer:
             # Parse payload components
             image = payload["image"]
             action = payload["action"]
+            print(type(image))
+            print(type(action))
 
             # Run Pix2Pix inference
             output_image = self.sample_fn(image, action)
@@ -44,7 +46,7 @@ class Pix2PixServer:
             logging.error(traceback.format_exc())
             logging.warning(
                 "Your request threw an error; make sure your request complies with the expected format:\n"
-                "{'image': np.ndarray, 'action': list}"
+                "{'image': np.ndarray, 'action': np.ndarray}"
             )
             return JSONResponse({"error": "An error occurred during image generation"}, status_code=500)
 
