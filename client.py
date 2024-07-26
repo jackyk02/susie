@@ -16,3 +16,7 @@ next_obs = requests.post(
     "http://0.0.0.0:8000/generate",
     json={"image": image, "action": example_action}
 ).json()
+
+print(next_obs.shape)
+
+Image.fromarray(next_obs).save("next_obs.jpg")
