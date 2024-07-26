@@ -247,7 +247,8 @@ def create_sample_fn(
 
     # load encoders
     vae_encode, vae_decode = load_vae(pretrained_path)
-    tokenize, untokenize, text_encode = load_text_encoder(pretrained_path)
+    tokenize, untokenize, text_encode, action_tokenizer = load_text_encoder(
+        pretrained_path)
     uncond_prompt_embed = text_encode(tokenize([""]))  # (1, 77, 768)
 
     log_snr_fn = scheduling.create_log_snr_fn(config["scheduling"])
