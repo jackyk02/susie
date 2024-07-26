@@ -47,7 +47,7 @@ class Pix2PixServer:
             if double_encode:
                 return JSONResponse(json_numpy.dumps(output_image))
             else:
-                return JSONResponse(action)
+                return JSONResponse(output_image)
         except:  # noqa: E722
             logging.error(traceback.format_exc())
             logging.warning(
