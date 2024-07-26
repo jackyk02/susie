@@ -13,6 +13,6 @@ image = np.array(Image.open(requests.get(
 example_action = np.array([0, 0.00784314, 0, 0, 0, 0.04705882, -0.99607843])
 
 next_obs = requests.post(
-    "http://0.0.0.0:8000/act",
+    "http://0.0.0.0:8000/generate",
     json={"image": image, "action": example_action}
 ).json()
