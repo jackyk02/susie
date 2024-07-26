@@ -1,6 +1,8 @@
 import requests
 import numpy as np
 from PIL import Image
+import json_numpy
+json_numpy.patch()
 
 # Assuming the server is running on localhost:8000
 url = "http://localhost:8000/generate"
@@ -14,10 +16,14 @@ image = np.array(Image.open(requests.get(
 example_action = np.array([0, 0.00784314, 0, 0, 0, 0.04705882, -0.99607843])
 
 # Send request to the server
-response = requests.post(url, json={"image": image, "action": example_action})
+response = requests.post(url, json=json_numpy.dumps({
+    "image": image,
+    "action": example_action
+}))
 
 if response.status_code == 200:
-    output_image = np.array(response.json()["output_image"])
-    Image.fromarray(output_image).save("output_image.jpg")
+    output_image = json_numpy.loads(response.content)["output_image"]
+    Image.fromarray(output_image.astype(np.uint8)).save("output_image.jpg")
+    print("Image generated and saved as output_image.jpg")
 else:
     print(f"Error: {response.json()['error']}")

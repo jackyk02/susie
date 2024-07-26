@@ -1,3 +1,5 @@
+from susie.jax_utils import initialize_compilation_cache
+from susie.model import create_sample_fn
 import os
 import json
 import logging
@@ -13,8 +15,9 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from PIL import Image
 
-from susie.model import create_sample_fn
-from susie.jax_utils import initialize_compilation_cache
+import json_numpy
+json_numpy.patch()
+
 
 # Initialize the compilation cache
 initialize_compilation_cache()
@@ -24,7 +27,7 @@ class Pix2PixServer:
     def __init__(self, model_path: str):
         """
         A simple server for Pix2Pix models; exposes `/generate` to create an image given an input image and action.
-        => Takes in {"image": np.ndarray, "action": list}
+        => Takes in {"image": np.ndarray, "action": np.ndarray}
         => Returns  {"output_image": np.ndarray}
         """
         self.model_path = model_path
@@ -32,16 +35,18 @@ class Pix2PixServer:
 
     def generate_image(self, payload: Dict[str, Any]) -> JSONResponse:
         try:
+            if "encoded" in payload:
+                # Support cases where numpy arrays are "double-encoded" as strings
+                payload = json.loads(payload["encoded"])
+
             # Parse payload components
             image = payload["image"]
             action = payload["action"]
-            print(type(image))
-            print(type(action))
 
             # Run Pix2Pix inference
             output_image = self.sample_fn(image, action)
 
-            return JSONResponse({"output_image": output_image})
+            return JSONResponse(json_numpy.dumps({"output_image": output_image}))
         except:  # noqa: E722
             logging.error(traceback.format_exc())
             logging.warning(
