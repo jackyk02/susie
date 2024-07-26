@@ -257,7 +257,7 @@ def create_sample_fn(
     rng = jax.random.PRNGKey(int(time.time()))
 
     def action_to_tokenid(actions):
-        token_ids = action_tokenizer.__call__(actions)
+        token_ids = action_tokenizer.__call__([actions])
         prompt_template = np.array(
             [49406, 768, 1311, 585, 1012, 789, 953, 2019, 518, 1816])
 
