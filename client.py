@@ -17,7 +17,7 @@ next_obs = requests.post(
     json={"image": image, "action": example_action}
 ).json()
 
-print(type(next_obs))
+next_obs = json_numpy.loads(next_obs)
 print(np.ndarray(next_obs))
 Image.fromarray(image).save("in_image.jpg")
 Image.fromarray(np.ndarray(next_obs)).save("next_obs.jpg")
