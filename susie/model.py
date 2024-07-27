@@ -169,19 +169,96 @@ def load_text_encoder(
 
     # return tokenize, untokenize, partial(text_encode, text_encoder.params)
 
+from typing import Any, Callable, Tuple, Union
+
+import flax.linen as nn
+import jax
+import jax.numpy as jnp
+import numpy as np
+from flax.linen import Conv, DenseGeneral
+
+def quantize_params(params, bits=8):
+    """Quantize parameters to the specified number of bits."""
+    def quantize(x):
+        max_val = np.max(np.abs(x))
+        scale = (2**(bits-1) - 1) / max_val
+        return np.round(x * scale) / scale
+    
+    return jax.tree_map(quantize, params)
+
+class QuantizedDenseGeneral(nn.Module):
+    features: int
+    use_bias: bool = True
+    dtype: Any = jnp.float32
+    precision: Any = None
+    kernel_init: Callable = nn.initializers.lecun_normal()
+    bias_init: Callable = nn.initializers.zeros
+    bits: int = 8
+
+    @nn.compact
+    def __call__(self, inputs):
+        original = DenseGeneral(self.features, use_bias=self.use_bias, 
+                                dtype=self.dtype, precision=self.precision, 
+                                kernel_init=self.kernel_init, bias_init=self.bias_init)
+        y = original(inputs)
+        
+        # Quantize weights and biases
+        self.sow('params', 'kernel', quantize_params(original.variables['params']['kernel'], self.bits))
+        if self.use_bias:
+            self.sow('params', 'bias', quantize_params(original.variables['params']['bias'], self.bits))
+        
+        return y
+
+class QuantizedConv(nn.Module):
+    features: int
+    kernel_size: Tuple[int, ...]
+    strides: Union[None, int, Tuple[int, ...]] = 1
+    padding: Union[str, int, Tuple[int, ...]] = 'SAME'
+    input_dilation: Union[None, int, Tuple[int, ...]] = 1
+    kernel_dilation: Union[None, int, Tuple[int, ...]] = 1
+    feature_group_count: int = 1
+    use_bias: bool = True
+    dtype: Any = jnp.float32
+    precision: Any = None
+    kernel_init: Callable = nn.initializers.lecun_normal()
+    bias_init: Callable = nn.initializers.zeros
+    bits: int = 8
+
+    @nn.compact
+    def __call__(self, inputs):
+        original = Conv(self.features, self.kernel_size, self.strides, self.padding,
+                        self.input_dilation, self.kernel_dilation, self.feature_group_count,
+                        self.use_bias, self.dtype, self.precision, self.kernel_init, self.bias_init)
+        y = original(inputs)
+        
+        # Quantize weights and biases
+        self.sow('params', 'kernel', quantize_params(original.variables['params']['kernel'], self.bits))
+        if self.use_bias:
+            self.sow('params', 'bias', quantize_params(original.variables['params']['bias'], self.bits))
+        
+        return y
 
 def load_pretrained_unet(
-    path: str, in_channels: int
+    path: str, in_channels: int, quantization_bits: int = 8
 ) -> Tuple[FlaxUNet2DConditionModel, dict]:
     model_def, params = FlaxUNet2DConditionModel.from_pretrained(
         path, dtype=np.float32, subfolder="unet"
     )
 
-    # same issue, they commit the params to the CPU, which totally messes stuff
-    # up downstream...
-    params = jax.device_get(params)
+    # Quantize parameters
+    params = quantize_params(params, bits=quantization_bits)
 
-    # add extra parameters to conv_in if necessary
+    # Replace Conv and DenseGeneral layers with quantized versions
+    def replace_layers(module):
+        if isinstance(module, Conv):
+            return QuantizedConv(bits=quantization_bits, **module.__dict__)
+        elif isinstance(module, DenseGeneral):
+            return QuantizedDenseGeneral(bits=quantization_bits, **module.__dict__)
+        return module
+
+    model_def = jax.tree_map(replace_layers, model_def)
+
+    # Add extra parameters to conv_in if necessary
     old_conv_in = params["conv_in"]["kernel"]
     h, w, cin, cout = old_conv_in.shape
     logging.info(f"Adding {in_channels - cin} channels to conv_in")
@@ -190,7 +267,7 @@ def load_pretrained_unet(
     )
     params["conv_in"]["kernel"][:, :, :cin, :] = old_conv_in
 
-    # monkey-patch __call__ to use channels-last
+    # Monkey-patch __call__ to use channels-last
     model_def.__call__ = lambda self, sample, *args, **kwargs: eo.rearrange(
         FlaxUNet2DConditionModel.__call__(
             self, eo.rearrange(sample, "b h w c -> b c h w"), *args, **kwargs
@@ -199,7 +276,6 @@ def load_pretrained_unet(
     )
 
     return model_def, params
-
 
 def create_sample_fn(
     path: str,
@@ -230,7 +306,7 @@ def create_sample_fn(
         model_def = create_model_def(config.model)
     else:
         # assume this is in HuggingFace format
-        model_def, params = load_pretrained_unet(path, in_channels=8)
+        model_def, params = load_pretrained_unet(path, in_channels=8, quantization_bits=8)
 
         # hardcode scheduling config to be "scaled_linear" (used by Stable Diffusion)
         config = {"scheduling": {"noise_schedule": "scaled_linear"}}
