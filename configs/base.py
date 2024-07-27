@@ -7,11 +7,11 @@ def base():
     config = ConfigDict()
 
     # top-level stuff
-    config.seed = 42
+    config.seed = 88
     config.wandb_project = None
     config.run_name = "susie"
     config.logdir = "/root/logs"  # specify logdir path
-    config.num_steps = 40000
+    config.num_steps = 80000
     config.log_interval = 100
     config.save_interval = 5000
     config.val_interval = 2500
