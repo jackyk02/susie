@@ -129,7 +129,7 @@ def base():
 
     # model
     config.model = model = ConfigDict()
-    config.model.pretrained = "kvablack/instruct-pix2pix-flax"
+    config.model.pretrained = "kvablack/susie"
 
     return config
 
