@@ -3,6 +3,7 @@ from susie.jax_utils import initialize_compilation_cache
 import requests
 import numpy as np
 from PIL import Image
+import time
 
 initialize_compilation_cache()
 sample_fn = create_sample_fn("jackyk07/pix2pix")
@@ -12,7 +13,13 @@ image = np.array(Image.open(requests.get(
 
 example_action = [0, 0.00784314, 0, 0, 0, 0.04705882, -0.99607843]
 
+# Measure the time it takes for sample_fn to execute
+start_time = time.time()
 image_out = sample_fn(image, example_action)
+end_time = time.time()
+
+execution_time = end_time - start_time
+print(f"Execution time of sample_fn: {execution_time:.4f} seconds")
 
 # to display the images if you're in a Jupyter notebook
 Image.fromarray(image).save("in_image.jpg")
