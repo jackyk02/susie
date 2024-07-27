@@ -4,6 +4,19 @@ import torch
 from PIL import Image
 import requests
 import time
+import os
+
+if not os.path.exists("pt"):
+    pipe = UNet2DConditionModel.from_pretrained(
+        "jackyk07/pix2pix",
+        subfolder="unet",
+        in_channels=8,
+        safety_checker=None,
+        from_flax=True
+    ).to("cpu")
+
+    pipe.save_pretrained("pt")
+
 
 # Load UNet model with flash attention
 unet = UNet2DConditionModel.from_pretrained(
