@@ -96,6 +96,8 @@ def make_dataset(
         .map(dl.transforms.unflatten_dict)
         .map(getattr(Transforms, name))
         .filter(lambda x: tf.math.reduce_all(tf.math.is_finite(x["actions"])))
+        .filter(lambda x: tf.math.reduce_all(x["lang"] != ""))
+        .filter(lambda x: tf.math.reduce_all(x["lang"] != "no image loaded in this task"))
         .unbatch()
         .shuffle(shuffle_buffer_size)
     )
@@ -143,7 +145,8 @@ def make_dataset(
         subgoals = x["next_obs"]
         goals = x["next_obs"][:]
         actions = x["actions"]
-        return {"curr": curr, "subgoals": subgoals, "goals": goals, "actions": actions}
+        lang = x["lang"]
+        return {"curr": curr, "subgoals": subgoals, "goals": goals, "actions": actions, "lang": lang}
 
     dataset = dataset.map(formatting)
 
