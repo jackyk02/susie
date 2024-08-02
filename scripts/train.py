@@ -287,13 +287,13 @@ def main(_):
             prompt = f"The robot is attempting to {lang}. In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
             prompts.append(prompt)
 
-        print("prompt 0:" + str(prompts[0]))
-        print("prompt 1:" + str(prompts[1]))
+        # print("prompt 0:" + str(prompts[0]))
+        # print("prompt 1:" + str(prompts[1]))
 
         # assert all(s != "" for s in prompts)
         batch["prompt_ids"] = tokenize(prompts)
-        print(batch["prompt_ids"])
-        print(untokenize(batch["prompt_ids"]))
+        # print(batch["prompt_ids"])
+        # print(untokenize(batch["prompt_ids"]))
         # batch["prompt_ids"] = np.array(final_token_ids)
 
         return batch
@@ -353,7 +353,7 @@ def main(_):
     if pretrained_params is None or config.wandb_resume_id is not None:
         example_batch = next(train_loader)
         print("--------------------------------")
-        print(example_batch["subgoals"])
+        # print(example_batch["subgoals"])
 
         def init_fn(init_rng):
             if config.goal_drop_rate == 1.0:
