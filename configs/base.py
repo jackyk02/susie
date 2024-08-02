@@ -141,7 +141,7 @@ def debug_base():
     config.seed = 88
     config.wandb_project = None
     config.run_name = "susie"
-    config.logdir = "/root/logs"  # specify logdir path
+    config.logdir = "/mnt/d/logs"  # specify logdir path
     config.num_steps = 80000
     config.log_interval = 100
     config.save_interval = 5000
@@ -199,11 +199,11 @@ def debug_base():
 
     # data
     config.data = ConfigDict()
-    config.data.batch_size = 512
+    config.data.batch_size = 2
 
     data_base = ConfigDict()
     data_base.image_size = 256
-    data_base.shuffle_buffer_size = 100000
+    data_base.shuffle_buffer_size = 100
     data_base.augment_kwargs = dict(
         random_resized_crop=dict(scale=[0.85, 1.0], ratio=[0.95, 1.05]),
         random_brightness=[0.05],

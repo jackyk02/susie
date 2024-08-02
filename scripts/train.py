@@ -276,8 +276,7 @@ def main(_):
 
     def tokenize_fn(batch):
         action_words = action_tokenizer(batch["actions"])
-        tasks = [s.decode("utf-8").lower().rstrip('.')
-                 for s in batch.pop("lang")]
+        tasks = [s.decode("utf-8") for s in batch.pop("lang")]
 
         prompts = []
 
