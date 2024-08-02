@@ -32,6 +32,9 @@ class Transforms:
         # del x["next_obs"]
         # x = dl.transforms.add_next_obs(x, pad=True)
         x = dl.transforms.process_obs_actions(x)
+        del x["_len"]
+        del x["_traj_index"]
+        del x["_frame_index"]
         # del x["actions"]
         # print(len(x["obs"]))
         # print(len(x["next_obs"]))

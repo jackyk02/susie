@@ -347,6 +347,7 @@ def main(_):
     # warm up loaders
     logging.info("Warming up data loaders...")
     next(train_loader), next(val_loader)
+    print("next loaded")
 
     # initialize parameters
     if pretrained_params is None or config.wandb_resume_id is not None:
@@ -500,7 +501,10 @@ def main(_):
     start_step = int(jax.device_get(state.step))
     pbar = tqdm(range(start_step, config.num_steps))
     for step in pbar:
+        print("loading data")
+
         batch = next(train_loader)
+        print("loaded data")
 
         rng, train_step_rng = jax.random.split(rng)
         state, info = train_step_jit(train_step_rng, state, batch)
