@@ -41,58 +41,12 @@ class ActionTokenizer:
         action = np.clip(action, a_min=float(self.min_action),
                          a_max=float(self.max_action))
         discretized_action = np.digitize(action, self.bins)
-        # print("call: " + str(list(self.tokenizer.vocab_size - discretized_action)))
-        return list(self.tokenizer.vocab_size - discretized_action)
 
         # Handle single element vs. batch
-        # if len(discretized_action.shape) == 1:
-        #     return self.tokenizer.decode(list(self.tokenizer.vocab_size - discretized_action))
-        # else:
-        #     return self.tokenizer.batch_decode((self.tokenizer.vocab_size - discretized_action).tolist())
-
-    def decode_token_ids_to_actions(self, action_token_ids: np.ndarray) -> np.ndarray:
-        """
-        Returns continuous actions for discrete action token IDs.
-
-        NOTE =>> Because of the way the actions are discretized w.r.t. the bins (and not the bin centers), the
-                 digitization returns bin indices between [1, # bins], inclusive, when there are actually only
-                 (# bins - 1) bin intervals.
-
-                 Therefore, if the digitization returns the last possible index, we map this to the last bin interval.
-
-        EXAMPLE =>> Let's say self._bins has 256 values. Then self._bin_centers has 255 values. Digitization returns
-                    indices between [1, 256]. We subtract 1 from all indices so that they are between [0, 255]. There
-                    is still one index (i==255) that would cause an out-of-bounds error if used to index into
-                    self._bin_centers. Therefore, if i==255, we subtract 1 from it so that it just becomes the index of
-                    the last bin center. We implement this simply via clipping between [0, 255 - 1].
-        """
-        discretized_actions = self.tokenizer.vocab_size - action_token_ids
-        discretized_actions = np.clip(
-            discretized_actions - 1, a_min=0, a_max=self.bin_centers.shape[0] - 1)
-
-        return self.bin_centers[discretized_actions]
-
-    # def action_str_to_numpy(self, action_prompt: str) -> np.ndarray:
-    #     # example_action_prompt = "[0.0024753  0.00216596 0.00469544 0.01071722 0.00189886 0.00154509 0.99607843]"
-
-    #     # Remove brackets and split the string
-    #     actions = action_prompt.strip('[]').split()
-
-    #     # Convert the string numbers to float and create a NumPy array based on prompt
-    #     return np.array([float(dim) for dim in actions])
-
-    # def action_numpy_to_str(self, action_array: np.ndarray) -> str:
-    #     # Convert NumPy array to string with specific formatting
-    #     action_str = np.array2string(action_array,
-    #                                  separator=' ',
-    #                                  precision=8,
-    #                                  suppress_small=True,
-    #                                  floatmode='fixed')
-
-    #     # Remove newlines and extra spaces
-    #     action_str = action_str.replace('\n', '').replace('  ', ' ')
-
-    #     return action_str
+        if len(discretized_action.shape) == 1:
+            return self.tokenizer.decode(list(self.tokenizer.vocab_size - discretized_action))
+        else:
+            return self.tokenizer.batch_decode((self.tokenizer.vocab_size - discretized_action).tolist())
 
     @property
     def vocab_size(self) -> int:

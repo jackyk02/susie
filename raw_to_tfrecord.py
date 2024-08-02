@@ -118,16 +118,17 @@ def process_actions(path):
     return act_list
 
 
-# def process_lang(path):
-#     fp = os.path.join(path, "lang.txt")
-#     text = ""  # empty string is a placeholder for missing text
-#     if os.path.exists(fp):
-#         with open(fp, "r") as f:
-#             text = f.readline().strip()
+def process_lang(path):
+    fp = os.path.join(path, "lang.txt")
+    text = ""  # empty string is a placeholder for missing text
+    if os.path.exists(fp):
+        with open(fp, "r") as f:
+            text = f.readline().strip()
 
-#     return text
+    return text
 
 
+# create a tfrecord for a group of trajectories
 def create_tfrecord(paths, output_path, tqdm_func, global_tqdm):
     writer = tf.io.TFRecordWriter(output_path)
     for path in paths:
@@ -142,25 +143,20 @@ def create_tfrecord(paths, output_path, tqdm_func, global_tqdm):
             out["obs"] = process_images(path)
             # out["obs"]["state"] = process_state(path)
             out["actions"] = process_actions(path)
-            # out["lang"] = process_lang(path)
+            out["lang"] = process_lang(path)
 
             # shift the actions according to camera latency
             if latency_shift:
                 out["obs"] = {k: v[1:] for k, v in out["obs"].items()}
                 out["actions"] = out["actions"][:-1]
 
-            # Create next_obs by shifting obs
-            out["next_obs"] = {k: v[1:] for k, v in out["obs"].items()}
-
-            # Remove the last element from obs and actions
-            out["obs"] = {k: v[:-1] for k, v in out["obs"].items()}
+            # append a null action to the end
+            out["actions"].append(np.zeros_like(out["actions"][0]))
 
             assert (
                 len(out["actions"])
                 # == len(out["obs"]["state"])
                 == len(out["obs"]["images0"])
-                # == len(out["next_obs"]["state"])
-                == len(out["next_obs"]["images0"])
             )
 
             example = tf.train.Example(

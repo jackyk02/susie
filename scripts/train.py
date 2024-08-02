@@ -275,31 +275,20 @@ def main(_):
         text_encode(tokenize([""])))  # (1, 77, 768)
 
     def tokenize_fn(batch):
-        # print("cur: " + str(batch.pop("curr_obs")[0].shape))
-        # print("next: " + str(batch.pop("next_obs")[0]))
-        # print("next: " + str(batch.pop("next_obs")[0].shape))
-        token_ids = action_tokenizer.__call__(batch["actions"])
-        prompt_template = np.array(
-            [49406, 768, 1311, 585, 1012, 789, 953, 2019, 518, 1816])
+        action_words = action_tokenizer(batch["actions"])
+        tasks = batch["lang"]
 
-        final_token_ids = []
+        prompts = []
 
-        for ids in token_ids:
-            temp_ids = np.concatenate([prompt_template, ids, np.array([286])])
-            padding = 77 - len(temp_ids)
-            token_ids = np.pad(temp_ids, (0, padding), constant_values=49407)
-            final_token_ids.append(token_ids)
-
-        # prompts = [
-        #    f"What would it look like after taking the action {action}?" for action in discretized]
+        for i in range(len(action_words)):
+            action = action_words[i]
+            lang = tasks[i]
+            prompt = f"The robot is attempting to {lang}. In the previous frame, the robot performed the action {action}. Given the current frame, what would the next frame look like?"
+            prompts.append(prompt)
 
         # assert all(s != "" for s in prompts)
-        # batch["prompt_ids"] = tokenize(prompts)
-        batch["prompt_ids"] = np.array(final_token_ids)
-
-        # print("hello")
-        # print(prompts)
-        # print(batch["prompt_ids"])
+        batch["prompt_ids"] = tokenize(prompts)
+        # batch["prompt_ids"] = np.array(final_token_ids)
 
         return batch
 
