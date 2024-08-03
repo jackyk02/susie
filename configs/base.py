@@ -10,7 +10,7 @@ def base():
     config.seed = 88
     config.wandb_project = None
     config.run_name = "susie"
-    config.logdir = "/root/logs"  # specify logdir path
+    config.logdir = "/mnt/d/logs"  # specify logdir path
     config.num_steps = 80000
     config.log_interval = 100
     config.save_interval = 5000
@@ -102,7 +102,7 @@ def base():
 
     config.data.bridge = bridge = deepcopy(data_base)
     bridge.weight = 45.0
-    bridge.data_path = "/root/tfrecords"
+    bridge.data_path = "/mnt/d/tfrecords"
     bridge.goal_relabeling_fn = "subgoal_only"
     bridge.goal_relabeling_kwargs = dict(
         subgoal_delta=(11, 14),
@@ -136,7 +136,9 @@ def base():
 
 def debug():
     config = base()
-    config.logdir = "logs"
+    config.mesh = [-1, 1]  # dp, fsdp
+
+    config.logdir = "/mnt/d/logs"
     config.log_interval = 150
     config.save_interval = 150
     config.val_interval = 150
