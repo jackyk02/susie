@@ -100,23 +100,23 @@ def base():
     #     truncate=True,
     # )
 
-    config.data.bridge = bridge = deepcopy(data_base)
-    bridge.weight = 45.0
-    bridge.data_path = "/mnt/d/tfrecords"
-    bridge.goal_relabeling_fn = "subgoal_only"
-    bridge.goal_relabeling_kwargs = dict(
-        subgoal_delta=(11, 14),
-        truncate=False,
-    )
-
-    # config.data.calvin = calvin = deepcopy(data_base)
-    # calvin.weight = 15.0
-    # calvin.data_path = ""
-    # calvin.goal_relabeling_fn = "subgoal_only"
-    # calvin.goal_relabeling_kwargs = dict(
-    #     subgoal_delta=(20, 21),
+    # config.data.bridge = bridge = deepcopy(data_base)
+    # bridge.weight = 45.0
+    # bridge.data_path = "/mnt/d/tfrecords"
+    # bridge.goal_relabeling_fn = "subgoal_only"
+    # bridge.goal_relabeling_kwargs = dict(
+    #     subgoal_delta=(11, 14),
     #     truncate=False,
     # )
+
+    config.data.calvin = calvin = deepcopy(data_base)
+    calvin.weight = 15.0
+    calvin.data_path = "/mnt/d/calvin_tfrecords"
+    calvin.goal_relabeling_fn = "subgoal_only"
+    calvin.goal_relabeling_kwargs = dict(
+        subgoal_delta=(20, 21),
+        truncate=False,
+    )
 
     # config.data.somethingsomething = somethingsomething = deepcopy(data_base)
     # somethingsomething.weight = 75.0

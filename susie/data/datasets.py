@@ -88,6 +88,7 @@ def make_dataset(
     goal_relabeling_kwargs: dict = {},
     augment_kwargs: dict = {},
 ) -> dl.DLataset:
+    print(train)
     paths = getattr(GetPaths, name)(data_path, train)
 
     dataset = (
