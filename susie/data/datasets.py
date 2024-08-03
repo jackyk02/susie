@@ -40,8 +40,8 @@ class Transforms:
     def calvin(x: Dict[str, Any]) -> Dict[str, Any]:
         x["obs"] = x.pop("image_states")
         x["lang"] = x.pop("language_annotation")
-
-        del x["actions"]
+        x = dl.transforms.add_next_obs(x, pad=True)
+        # del x["actions"]
         del x["proprioceptive_states"]
 
         return x
@@ -88,7 +88,6 @@ def make_dataset(
     goal_relabeling_kwargs: dict = {},
     augment_kwargs: dict = {},
 ) -> dl.DLataset:
-    print(train)
     paths = getattr(GetPaths, name)(data_path, train)
 
     dataset = (
