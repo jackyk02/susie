@@ -10,8 +10,8 @@ def base():
     config.seed = 88
     config.wandb_project = None
     config.run_name = "susie"
-    config.logdir = "/mnt/d/logs"  # specify logdir path
-    config.num_steps = 80000
+    config.logdir = "/root/logs"  # specify logdir path
+    config.num_steps = 50000
     config.log_interval = 100
     config.save_interval = 5000
     config.val_interval = 2500
@@ -20,7 +20,7 @@ def base():
     config.goal_drop_rate = 1.0
     config.curr_drop_rate = 0.0
     config.prompt_drop_rate = 0.0
-    config.mesh = [8, 1]  # dp, fsdp
+    config.mesh = [2, 1]  # dp, fsdp
 
     config.wandb_resume_id = None  # "susie/9rg8vi2r"
 
@@ -68,7 +68,7 @@ def base():
 
     # data
     config.data = ConfigDict()
-    config.data.batch_size = 512
+    config.data.batch_size = 128
 
     data_base = ConfigDict()
     data_base.image_size = 256
@@ -111,7 +111,7 @@ def base():
 
     config.data.calvin = calvin = deepcopy(data_base)
     calvin.weight = 15.0
-    calvin.data_path = "/mnt/d/calvin_tfrecords"
+    calvin.data_path = "/root/calvin_tfrecords"
     calvin.goal_relabeling_fn = "subgoal_only"
     calvin.goal_relabeling_kwargs = dict(
         subgoal_delta=(20, 21),

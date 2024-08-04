@@ -70,9 +70,9 @@ class GetPaths:
     def calvin(data_path: str, train: bool) -> List[str]:
         if train:
             return (
-                tf.io.gfile.glob(f"{data_path}/training/A/*")
-                + tf.io.gfile.glob(f"{data_path}/training/B/*")
-                + tf.io.gfile.glob(f"{data_path}/training/C/*")
+                tf.io.gfile.glob(f"{data_path}/training/D/*")
+               # + tf.io.gfile.glob(f"{data_path}/training/B/*")
+               # + tf.io.gfile.glob(f"{data_path}/training/C/*")
             )
         else:
             return tf.io.gfile.glob(f"{data_path}/validation/D/*")
