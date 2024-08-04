@@ -3,7 +3,7 @@
 
     The dataset constructed with this script is meant to be used to train a language conditioned policy.
 
-    Written by Pranav Atreya (pranavatreya@berkeley.edu).
+    Written by Pranav Atreya (pranavatreya@berkeley.edu). #
 """
 
 import numpy as np
