@@ -13,8 +13,8 @@ import os
 from multiprocessing import Pool
 
 ########## Dataset paths ###########
-raw_dataset_path = "/mnt/d/susie-calvin/calvin-sim/dataset/calvin_debug_dataset"
-tfrecord_dataset_path = "/mnt/d/calvin_tfrecords"
+raw_dataset_path = "/root/task_D_D"
+tfrecord_dataset_path = "/root/calvin_tfrecords"
 
 ########## Main logic ###########
 if not os.path.exists(tfrecord_dataset_path):
