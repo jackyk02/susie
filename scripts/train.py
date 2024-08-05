@@ -278,8 +278,16 @@ def main(_):
 
         tasks = [s.decode("utf-8") for s in batch.pop("lang")]
         action_words = action_tokenizer(batch["actions"])
-        batch["prompt_ids"] = tokenize(action_words)
+        # batch["prompt_ids"] = tokenize(action_words)
 
+        prompts = []
+        for i in range(len(action_words)):
+            action = action_words[i]
+            lang = str(tasks[i])
+            prompt = f"The robot is attempting to {lang}. In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
+            prompts.append(prompt)
+
+        batch["prompt_ids"] = tokenize(prompts)
         # token_ids = action_tokenizer.__call__(batch["actions"])
         # prompt_template = np.array(
         #     [49406, 768, 1311, 585, 1012, 789, 953, 2019, 518, 1816])
