@@ -144,8 +144,8 @@ def make_dataset(
         subgoals = x["next_obs"]
         goals = x["next_obs"][:]
         actions = x["actions"]
-        return {"curr": curr, "subgoals": subgoals, "goals": goals, "actions": actions}
-
+        lang = x["lang"]
+        return {"curr": curr, "subgoals": subgoals, "goals": goals, "actions": actions, "lang": lang}
     dataset = dataset.map(formatting)
 
     return dataset.repeat()

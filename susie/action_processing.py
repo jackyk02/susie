@@ -42,13 +42,13 @@ class ActionTokenizer:
                          a_max=float(self.max_action))
         discretized_action = np.digitize(action, self.bins)
         # print("call: " + str(list(self.tokenizer.vocab_size - discretized_action)))
-        return list(self.tokenizer.vocab_size - discretized_action)
+        # return list(self.tokenizer.vocab_size - discretized_action)
 
         # Handle single element vs. batch
-        # if len(discretized_action.shape) == 1:
-        #     return self.tokenizer.decode(list(self.tokenizer.vocab_size - discretized_action))
-        # else:
-        #     return self.tokenizer.batch_decode((self.tokenizer.vocab_size - discretized_action).tolist())
+        if len(discretized_action.shape) == 1:
+            return self.tokenizer.decode(list(self.tokenizer.vocab_size - discretized_action))
+        else:
+            return self.tokenizer.batch_decode((self.tokenizer.vocab_size - discretized_action).tolist())
 
     def decode_token_ids_to_actions(self, action_token_ids: np.ndarray) -> np.ndarray:
         """
