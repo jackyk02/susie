@@ -42,7 +42,7 @@ class Transforms:
         x["lang"] = x.pop("language_annotation")
         x = dl.transforms.process_obs_actions(x)
         # del x["actions"]
-        del x["proprioceptive_states"]
+        # del x["proprioceptive_states"]
 
         return x
 
