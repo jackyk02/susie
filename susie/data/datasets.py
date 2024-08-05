@@ -40,7 +40,7 @@ class Transforms:
     def calvin(x: Dict[str, Any]) -> Dict[str, Any]:
         x["obs"] = x.pop("image_states")
         x["lang"] = x.pop("language_annotation")
-        x = dl.transforms.add_next_obs(x, pad=True)
+        x = dl.transforms.process_obs_actions(x)
         # del x["actions"]
         del x["proprioceptive_states"]
 
@@ -71,8 +71,8 @@ class GetPaths:
         if train:
             return (
                 tf.io.gfile.glob(f"{data_path}/training/D/*")
-               # + tf.io.gfile.glob(f"{data_path}/training/B/*")
-               # + tf.io.gfile.glob(f"{data_path}/training/C/*")
+                # + tf.io.gfile.glob(f"{data_path}/training/B/*")
+                # + tf.io.gfile.glob(f"{data_path}/training/C/*")
             )
         else:
             return tf.io.gfile.glob(f"{data_path}/validation/D/*")
@@ -95,6 +95,8 @@ def make_dataset(
         .map(dl.transforms.unflatten_dict)
         .map(getattr(Transforms, name))
         .filter(lambda x: tf.math.reduce_all(tf.math.is_finite(x["actions"])))
+        .filter(lambda x: tf.math.reduce_all(x["lang"] != ""))
+        .filter(lambda x: tf.math.reduce_all(x["lang"] != "no image loaded in this task"))
         .unbatch()
         .shuffle(shuffle_buffer_size)
     )

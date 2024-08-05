@@ -20,7 +20,7 @@ def base():
     config.goal_drop_rate = 1.0
     config.curr_drop_rate = 0.0
     config.prompt_drop_rate = 0.0
-    config.mesh = [2, 1]  # dp, fsdp
+    config.mesh = [-1, 1]  # dp, fsdp
 
     config.wandb_resume_id = None  # "susie/9rg8vi2r"
 
@@ -68,7 +68,7 @@ def base():
 
     # data
     config.data = ConfigDict()
-    config.data.batch_size = 128
+    config.data.batch_size = 32
 
     data_base = ConfigDict()
     data_base.image_size = 256
