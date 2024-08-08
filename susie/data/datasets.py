@@ -30,7 +30,7 @@ class Transforms:
         x["obs"] = views[idx]
         # x["obs"] = x["obs"]["images0"]
         # del x["next_obs"]
-        x = dl.transforms.add_next_obs(x, pad=True)
+        x = dl.transforms.process_obs_actions(x)
         # del x["actions"]
         # print(len(x["obs"]))
         # print(len(x["next_obs"]))
