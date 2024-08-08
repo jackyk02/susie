@@ -7,7 +7,7 @@ def base():
     config = ConfigDict()
 
     # top-level stuff
-    config.seed = 88
+    config.seed = 888
     config.wandb_project = None
     config.run_name = "susie"
     config.logdir = "/root/logs"  # specify logdir path
@@ -20,7 +20,7 @@ def base():
     config.goal_drop_rate = 1.0
     config.curr_drop_rate = 0.0
     config.prompt_drop_rate = 0.0
-    config.mesh = [-1, 1]  # dp, fsdp
+    config.mesh = [4, 1]  # dp, fsdp
 
     config.wandb_resume_id = None  # "susie/9rg8vi2r"
 
@@ -68,7 +68,7 @@ def base():
 
     # data
     config.data = ConfigDict()
-    config.data.batch_size = 32
+    config.data.batch_size = 256
 
     data_base = ConfigDict()
     data_base.image_size = 256
@@ -100,23 +100,23 @@ def base():
     #     truncate=True,
     # )
 
-    # config.data.bridge = bridge = deepcopy(data_base)
-    # bridge.weight = 45.0
-    # bridge.data_path = "/mnt/d/tfrecords"
-    # bridge.goal_relabeling_fn = "subgoal_only"
-    # bridge.goal_relabeling_kwargs = dict(
-    #     subgoal_delta=(11, 14),
-    #     truncate=False,
-    # )
-
-    config.data.calvin = calvin = deepcopy(data_base)
-    calvin.weight = 15.0
-    calvin.data_path = "/root/calvin_tfrecords"
-    calvin.goal_relabeling_fn = "subgoal_only"
-    calvin.goal_relabeling_kwargs = dict(
-        subgoal_delta=(20, 21),
+    config.data.bridge = bridge = deepcopy(data_base)
+    bridge.weight = 45.0
+    bridge.data_path = "/root/tfrecords"
+    bridge.goal_relabeling_fn = "subgoal_only"
+    bridge.goal_relabeling_kwargs = dict(
+        subgoal_delta=(11, 14),
         truncate=False,
     )
+
+    # config.data.calvin = calvin = deepcopy(data_base)
+    # calvin.weight = 15.0
+    # calvin.data_path = "/root/calvin_tfrecords"
+    # calvin.goal_relabeling_fn = "subgoal_only"
+    # calvin.goal_relabeling_kwargs = dict(
+    #     subgoal_delta=(20, 21),
+    #     truncate=False,
+    # )
 
     # config.data.somethingsomething = somethingsomething = deepcopy(data_base)
     # somethingsomething.weight = 75.0
