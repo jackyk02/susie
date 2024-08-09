@@ -276,7 +276,7 @@ def main(_):
 
     def tokenize_fn(batch):
 
-        tasks = [s.decode("utf-8") for s in batch.pop("lang")]
+        tasks = [s.decode("utf-8").rstrip(".") for s in batch.pop("lang")]
         action_words = action_tokenizer(batch["actions"])
         # batch["prompt_ids"] = tokenize(action_words)
 
@@ -284,7 +284,8 @@ def main(_):
         for i in range(len(action_words)):
             action = action_words[i]
             lang = str(tasks[i])
-            prompt = f"The robot is attempting to {lang}. In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
+            prompt = f"In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
+            # prompt = f"The robot is attempting to {lang}. In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
             prompts.append(prompt)
 
         batch["prompt_ids"] = tokenize(prompts)
