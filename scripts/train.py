@@ -283,9 +283,12 @@ def main(_):
         prompts = []
         for i in range(len(action_words)):
             action = action_words[i]
-            lang = str(tasks[i])
-            prompt = f"In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
-            # prompt = f"The robot is attempting to {lang}. In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
+            lang = tasks[i]
+            if type(lang) is not str:
+                lang = ""
+
+            # prompt = f"In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
+            prompt = f"The robot is attempting to {lang}. In the previous frame, the robot performed the action {action}. Given these information and the current frame, what would the next frame look like?"
             prompts.append(prompt)
 
         batch["prompt_ids"] = tokenize(prompts)
