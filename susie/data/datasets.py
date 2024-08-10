@@ -97,6 +97,7 @@ def make_dataset(
         .filter(lambda x: tf.math.reduce_all(tf.math.is_finite(x["actions"])))
         .filter(lambda x: tf.math.reduce_all(x["lang"] != ""))
         .filter(lambda x: tf.math.reduce_all(x["lang"] != "no image loaded in this task"))
+        .filter(lambda x: tf.math.reduce_all(len(x["lang"]) < 10))
         .unbatch()
         .shuffle(shuffle_buffer_size)
     )
