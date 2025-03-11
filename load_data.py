@@ -286,13 +286,13 @@ def serialize_data(train_samples=70000):
                 img_path = f"images/{processed}.jpg"
                 img.save(img_path)
 
-                process_image(
-                    img_path,
-                    output_dir="./output/",
-                    crop_scale=0.9,
-                    target_size=(224, 224),
-                    batch_size=1
-                )
+                # process_image(
+                #     img_path,
+                #     output_dir="./output/",
+                #     crop_scale=0.9,
+                #     target_size=(224, 224),
+                #     batch_size=1
+                # )
                 
                 # Store instruction and action in dictionaries
                 instruction_dict[processed] = instruction
@@ -322,4 +322,4 @@ def serialize_data(train_samples=70000):
 
 if __name__ == "__main__":
     # Call the main function with desired sample count
-    serialize_data(100)
+    serialize_data(1000000)
